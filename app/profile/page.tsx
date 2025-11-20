@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import ProfileCard from "@/app/components/ProfileCard";
 import PostCard from "@/app/components/PostCard";
+import CreatePost from "@/app/components/CreatePost";
 
 interface User {
   _id: string;
@@ -33,63 +34,32 @@ interface Post {
   createdAt: string;
 }
 
-export default function ProfilePage() {
-  const params = useParams();
-  const username = params.username as string;
-  
+export default function MyProfilePage() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
-    fetchCurrentUser();
+    fetchProfile();
   }, []);
 
-  useEffect(() => {
-    if (username) {
-      fetchProfile();
-    }
-  }, [username]);
-
-  useEffect(() => {
-    if (currentUser && user) {
-      setIsFollowing(user.followers.some((id: string) => id.toString() === currentUser._id));
-    }
-  }, [currentUser, user]);
-
-  const fetchCurrentUser = async () => {
-    try {
-      const res = await fetch("/api/auth/me", { credentials: "include" });
-      const data = await res.json();
-      setCurrentUser(data.user);
-    } catch (err) {
-      console.error("Failed to fetch current user:", err);
-    }
-  };
-
   const fetchProfile = async () => {
-    if (!username) return;
-    
     setLoading(true);
     setError(null);
     
     try {
-      // Decode the username in case it's URL encoded
-      const decodedUsername = decodeURIComponent(username);
-      
-      // Fetch user profile
-      const encodedUsername = encodeURIComponent(decodedUsername);
-      const userRes = await fetch(`/api/user/${encodedUsername}`, { 
-        credentials: "include" 
-      });
-      
+      // Fetch current user's full profile
+      const userRes = await fetch("/api/user/me", { credentials: "include" });
       const userData = await userRes.json();
       
       if (!userRes.ok) {
-        setError(userData.error || "User not found");
+        if (userRes.status === 401) {
+          router.push("/login");
+          return;
+        }
+        setError(userData.error || "Failed to load profile");
         setUser(null);
         setPosts([]);
         setLoading(false);
@@ -99,7 +69,7 @@ export default function ProfilePage() {
       if (userData.user) {
         setUser(userData.user);
         
-        // Fetch all posts and filter by this user's ID (more reliable)
+        // Fetch all posts and filter by this user's username
         const postsRes = await fetch("/api/posts/list", { credentials: "include" });
         const postsData = await postsRes.json();
         
@@ -125,28 +95,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleFollow = async (userId: string) => {
-    try {
-      const res = await fetch("/api/user/follow", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ targetId: userId }),
-      });
-
-      if (!res.ok) throw new Error("Follow failed");
-      
-      const data = await res.json();
-      setIsFollowing(data.following);
-      
-      // Refresh profile to get updated follower count
-      fetchProfile();
-    } catch (err) {
-      console.error("Follow error:", err);
-      alert("Failed to follow/unfollow user");
-    }
-  };
-
   const handleLike = async (postId: string) => {
     try {
       const res = await fetch("/api/posts/like", {
@@ -159,7 +107,6 @@ export default function ProfilePage() {
       fetchProfile();
     } catch (err) {
       console.error("Like error:", err);
-      throw err;
     }
   };
 
@@ -175,7 +122,6 @@ export default function ProfilePage() {
       fetchProfile();
     } catch (err) {
       console.error("Comment error:", err);
-      throw err;
     }
   };
 
@@ -193,10 +139,7 @@ export default function ProfilePage() {
       <div className="max-w-3xl mx-auto text-center py-12">
         <div className="bg-red-50 border border-red-200 rounded-xl p-6">
           <p className="text-red-600 text-lg font-semibold">
-            {error || "User not found"}
-          </p>
-          <p className="text-red-500 mt-2">
-            The user "{username}" does not exist.
+            {error || "Failed to load profile"}
           </p>
           <a 
             href="/community" 
@@ -213,13 +156,14 @@ export default function ProfilePage() {
     <div className="max-w-3xl mx-auto">
       <ProfileCard
         user={user}
-        currentUserId={currentUser?._id}
-        isFollowing={isFollowing}
-        onFollow={handleFollow}
+        currentUserId={user._id}
+        isFollowing={false}
       />
 
       <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">Posts</h2>
+        <h2 className="text-2xl font-bold mb-6 text-gray-900">My Posts</h2>
+        
+        <CreatePost onPostCreated={fetchProfile} />
         {posts.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-200">
             <p className="text-gray-500 text-lg">No posts yet.</p>
@@ -230,7 +174,7 @@ export default function ProfilePage() {
               <PostCard
                 key={post._id}
                 post={post}
-                currentUserId={currentUser?._id}
+                currentUserId={user._id}
                 onLike={handleLike}
                 onComment={handleComment}
               />
@@ -241,3 +185,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

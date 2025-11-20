@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import PostCard from "@/app/components/PostCard";
+import CreatePost from "@/app/components/CreatePost";
 
 interface Post {
   _id: string;
@@ -125,6 +126,14 @@ export default function CommunityPage() {
   return (
     <div className="max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-gray-900">Community (Jamiyat)</h1>
+      
+      <CreatePost onPostCreated={() => {
+        if (activeTab === "following") {
+          fetchFollowingPosts();
+        } else {
+          fetchForYouPosts();
+        }
+      }} />
       
       <div className="flex gap-4 mb-6 border-b border-gray-200">
         <button

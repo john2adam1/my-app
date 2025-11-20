@@ -110,6 +110,10 @@ export default function ProfileCard({
             </div>
             <div className="text-sm text-yellow-700 font-semibold">Stars</div>
           </div>
+          <div className="text-center bg-white/60 backdrop-blur-sm px-6 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+            <div className="text-3xl font-black text-purple-600 mb-1">Yes or not</div>
+            <div className="text-sm text-gray-600 font-semibold">Premium</div>
+          </div>
         </div>
 
         {user.categories.length > 0 && (
