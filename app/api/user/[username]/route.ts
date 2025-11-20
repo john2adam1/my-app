@@ -5,12 +5,13 @@ import { IUser } from "@/types/User";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { username: string } }
+  { params }: { params: Promise<{ username: string }> }
 ) {
   try {
     await connectDB();
 
-    const { username } = params; // ✅ await YOO'O'Q !!!
+    // Await params in Next.js 16
+    const { username } = await params;
     const decodedUsername = decodeURIComponent(username);
 
     let user: IUser | null = await User.findOne({ username: decodedUsername })
