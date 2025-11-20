@@ -42,75 +42,89 @@ export default function ProfileCard({
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-md">
-      <div className="flex items-start gap-6 mb-6">
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={user.username}
-            className="w-24 h-24 rounded-full object-cover border-4 border-gray-100 shadow-sm"
-          />
-        ) : (
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-            {user.username[0].toUpperCase()}
-          </div>
-        )}
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-2xl font-bold text-gray-900">{user.name || user.username}</h2>
-            {user.isPremium && (
-              <span className="px-3 py-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white text-xs font-semibold rounded-full shadow-sm">
-                ⭐ Premium
-              </span>
+    <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-3xl p-8 shadow-2xl border-2 border-blue-100 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full blur-3xl opacity-30 -mr-32 -mt-32"></div>
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-br from-blue-200 to-cyan-200 rounded-full blur-3xl opacity-30 -ml-32 -mb-32"></div>
+      
+      <div className="relative z-10">
+        <div className="flex items-start gap-6 mb-6">
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={user.username}
+              className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-2xl ring-4 ring-purple-200"
+            />
+          ) : (
+            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-4xl font-black shadow-2xl ring-4 ring-purple-200">
+              {user.username[0].toUpperCase()}
+            </div>
+          )}
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-3xl font-black text-gray-900 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                {user.name || user.username}
+              </h2>
+              {user.isPremium && (
+                <span className="px-3 py-1.5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 text-white text-xs font-black rounded-full shadow-lg flex items-center gap-1 animate-pulse">
+                  ⭐ PREMIUM
+                </span>
+              )}
+            </div>
+            <p className="text-gray-600 text-lg mb-3 flex items-center gap-2">
+              <span className="text-purple-500">@</span>
+              <span className="font-semibold">{user.username}</span>
+            </p>
+            {user.bio && (
+              <p className="text-gray-700 leading-relaxed mt-4 bg-white/60 p-4 rounded-xl backdrop-blur-sm">
+                {user.bio}
+              </p>
             )}
           </div>
-          <p className="text-gray-500 text-lg mb-2">@{user.username}</p>
-          {user.bio && (
-            <p className="text-gray-700 leading-relaxed mt-3">{user.bio}</p>
+          {!isOwnProfile && onFollow && (
+            <button
+              onClick={handleFollow}
+              className={`px-8 py-3 rounded-xl font-black transition-all shadow-lg hover:shadow-2xl transform hover:scale-105 ${
+                isFollowing
+                  ? "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 border-2 border-gray-300"
+                  : "bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:from-blue-600 hover:via-purple-600 hover:to-pink-600"
+              }`}
+            >
+              {isFollowing ? "✓ Following" : "+ Follow"}
+            </button>
           )}
         </div>
-        {!isOwnProfile && onFollow && (
-          <button
-            onClick={handleFollow}
-            className={`px-6 py-2.5 rounded-lg font-semibold transition-all shadow-sm ${
-              isFollowing
-                ? "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
-                : "bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg"
-            }`}
-          >
-            {isFollowing ? "Unfollow" : "Follow"}
-          </button>
+
+        <div className="flex gap-8 mb-6 pb-6 border-b-2 border-purple-200">
+          <div className="text-center bg-white/60 backdrop-blur-sm px-6 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+            <div className="text-3xl font-black text-blue-600 mb-1">{user.followers.length}</div>
+            <div className="text-sm text-gray-600 font-semibold">Followers</div>
+          </div>
+          <div className="text-center bg-white/60 backdrop-blur-sm px-6 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+            <div className="text-3xl font-black text-purple-600 mb-1">{user.following.length}</div>
+            <div className="text-sm text-gray-600 font-semibold">Following</div>
+          </div>
+          <div className="text-center bg-gradient-to-br from-yellow-100 to-orange-100 backdrop-blur-sm px-6 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 border-2 border-yellow-300">
+            <div className="text-3xl font-black text-yellow-600 mb-1 flex items-center justify-center gap-1">
+              <span>⭐</span> {user.stars}
+            </div>
+            <div className="text-sm text-yellow-700 font-semibold">Stars</div>
+          </div>
+        </div>
+
+        {user.categories.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {user.categories.map((cat, idx) => (
+              <span
+                key={idx}
+                className="px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 rounded-full text-sm font-bold border-2 border-blue-200 shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+              >
+                #{cat}
+              </span>
+            ))}
+          </div>
         )}
       </div>
-
-      <div className="flex gap-8 mb-6 pb-6 border-b border-gray-200">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900">{user.followers.length}</div>
-          <div className="text-sm text-gray-500">Followers</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900">{user.following.length}</div>
-          <div className="text-sm text-gray-500">Following</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-yellow-500">⭐ {user.stars}</div>
-          <div className="text-sm text-gray-500">Stars</div>
-        </div>
-      </div>
-
-      {user.categories.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {user.categories.map((cat, idx) => (
-            <span
-              key={idx}
-              className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-100"
-            >
-              {cat}
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
-
